@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BDI-I — Опитувальник депресії Бека</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+    color: #2c3e50;
+    min-height: 100vh;
+}
+.screen { display: none; }
+.screen.active { display: block; }
+.container { max-width: 820px; margin: 0 auto; padding: 24px 16px; }
+
+/* ── Welcome ── */
+.card {
+    background: white;
+    border-radius: 14px;
+    padding: 40px;
+    margin-top: 40px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+.card h1 { font-size: 22px; margin-bottom: 10px; }
+.card .subtitle {
+    color: #666;
+    line-height: 1.65;
+    margin-bottom: 28px;
+    font-size: 15px;
+}
+.form-group { margin-bottom: 18px; text-align: left; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+.form-group input {
+    width: 100%;
+    padding: 11px 15px;
+    border: 2px solid #dde1e7;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color 0.2s;
+}
+.form-group input:focus { outline: none; border-color: #4a90d9; }
+.form-group input.error { border-color: #e74c3c; }
+.btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+.btn {
+    padding: 11px 26px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: #4a90d9; color: white; }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-secondary { background: #e8eaed; color: #444; }
+.btn-secondary:hover { filter: brightness(0.95); }
+.btn-success { background: #27ae60; color: white; }
+.btn-success:hover { filter: brightness(1.08); }
+.btn-danger { background: #e74c3c; color: white; }
+.btn-danger:hover { filter: brightness(1.08); }
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+
+/* ── Survey ── */
+.survey-top {
+    background: white;
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.survey-top h2 { font-size: 16px; color: #555; }
+.progress-bar { height: 6px; background: #e0e4ea; border-radius: 3px; margin-top: 10px; }
+.progress-fill { height: 100%; background: #4a90d9; border-radius: 3px; transition: width 0.35s; }
+
+.q-card {
+    background: white;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-left: 4px solid #c5d9f1;
+    transition: border-color 0.2s;
+}
+.q-card.answered { border-left-color: #4a90d9; }
+.q-num { font-size: 12px; color: #aaa; margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+.q-label { font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 14px; }
+.options { list-style: none; }
+.opt { margin-bottom: 8px; }
+.opt input[type="radio"] { display: none; }
+.opt label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 2px solid #eaecef;
+    transition: border-color 0.15s, background 0.15s;
+    font-size: 14px;
+    color: #333;
+}
+.opt label:hover { border-color: #4a90d9; background: #f0f7ff; }
+.opt input:checked + label { border-color: #4a90d9; background: #e8f2fd; font-weight: 600; }
+.score-dot {
+    min-width: 22px; height: 22px;
+    background: #e0e4ea; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #888;
+    flex-shrink: 0; margin-top: 1px;
+}
+.opt input:checked + label .score-dot { background: #4a90d9; color: white; }
+
+.survey-bottom {
+    background: white;
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin-top: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+.warn { color: #c0392b; font-size: 13px; }
+
+/* ── Done ── */
+.done-icon { font-size: 52px; margin-bottom: 14px; }
+
+/* ── Results ── */
+.results-top {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.results-top h2 { font-size: 18px; }
+.results-top p { color: #888; font-size: 13px; margin-top: 4px; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.resp-block {
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+.resp-head {
+    padding: 14px 20px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    gap: 12px;
+}
+.resp-head:hover { background: #f0f3f7; }
+.resp-meta { font-size: 13px; color: #888; margin-left: 10px; }
+.resp-body { display: none; overflow-x: auto; }
+.resp-body.open { display: block; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f1f3f5; padding: 9px 13px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e0e4ea; white-space: nowrap; }
+td { padding: 9px 13px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafbfc; }
+
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.sev-0 { background: #d4edda; color: #155724; }
+.sev-1 { background: #fff3cd; color: #856404; }
+.sev-2 { background: #ffe5d0; color: #c0392b; }
+.sev-3 { background: #f8d7da; color: #721c24; }
+
+.empty { text-align: center; padding: 60px 20px; color: #bbb; }
+.empty p:first-child { font-size: 42px; margin-bottom: 12px; }
+
+@media (max-width: 560px) {
+    .survey-bottom { flex-direction: column; }
+    .card { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ WELCOME ══════════ -->
+<div id="screen-welcome" class="screen active">
+<div class="container">
+<div class="card" style="text-align:center">
+    <h1>Опитувальник депресії Бека (BDI‑I)</h1>
+    <p class="subtitle">
+        Опитувальник складається з 21 групи тверджень.<br>
+        Для кожної групи оберіть одне твердження, яке найточніше описує
+        ваш стан <strong>протягом останніх двох тижнів</strong>, включаючи сьогоднішній день.
+    </p>
+    <div class="form-group" style="max-width:340px; margin:0 auto 20px;">
+        <label for="rid">Ідентифікатор учасника</label>
+        <input type="text" id="rid" placeholder="Наприклад: P001" autocomplete="off">
+    </div>
+    <div class="btn-row">
+        <button class="btn btn-primary" onclick="startSurvey()">Розпочати тест →</button>
+        <button class="btn btn-secondary" onclick="goResults()">Панель дослідника</button>
+    </div>
+</div>
+</div>
+</div>
+
+<!-- ══════════ SURVEY ══════════ -->
+<div id="screen-survey" class="screen">
+<div class="container">
+    <div class="survey-top">
+        <h2 id="survey-heading"></h2>
+        <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+    </div>
+    <div id="qcontainer"></div>
+    <div class="survey-bottom">
+        <span class="warn" id="warn-msg"></span>
+        <button class="btn btn-primary" onclick="submitSurvey()">Завершити та зберегти</button>
+    </div>
+</div>
+</div>
+
+<!-- ══════════ DONE ══════════ -->
+<div id="screen-done" class="screen">
+<div class="container">
+<div class="card" style="text-align:center">
+    <div class="done-icon">✓</div>
+    <h1>Дякуємо!</h1>
+    <p style="color:#666; margin:12px 0 28px; font-size:15px;">Ваші відповіді збережено. Тест завершено.</p>
+    <div class="btn-row">
+        <button class="btn btn-primary" onclick="goWelcome()">Новий учасник</button>
+        <button class="btn btn-secondary" onclick="goResults()">Панель дослідника</button>
+    </div>
+</div>
+</div>
+</div>
+
+<!-- ══════════ RESULTS ══════════ -->
+<div id="screen-results" class="screen">
+<div class="container">
+    <div class="results-top">
+        <div>
+            <h2>Панель дослідника</h2>
+            <p>Відповіді відображаються в тому порядку, в якому питання пред'являлися учаснику</p>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-success btn-sm" onclick="exportCSV()">⬇ CSV</button>
+            <button class="btn btn-danger btn-sm" onclick="clearData()">Очистити</button>
+            <button class="btn btn-secondary btn-sm" onclick="goWelcome()">← Назад</button>
+        </div>
+    </div>
+    <div id="res-content"></div>
+</div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────────
+// BDI-I: 21 шкала, кожна відповідь 0–3
+// ──────────────────────────────────────────────────────────────────
+const Q = [
+  { id:1,  name:"Смуток", opts:[
+      "Я не почуваюся засмученим",
+      "Я почуваюся засмученим",
+      "Я весь час засмучений і не можу зупинитися",
+      "Я настільки засмучений або нещасний, що не можу цього витерпіти"
+  ]},
+  { id:2,  name:"Песимізм", opts:[
+      "Я не відчуваю особливої зневіри щодо свого майбутнього",
+      "Я відчуваю зневіру щодо свого майбутнього",
+      "Я відчуваю, що мені нічого чекати від життя",
+      "Я відчуваю, що майбутнє безнадійне і нічого не зміниться на краще"
+  ]},
+  { id:3,  name:"Відчуття провалу", opts:[
+      "Я не почуваюся невдахою",
+      "Мені здається, що я зазнав більше невдач, ніж інші люди",
+      "Коли я озираюся на своє життя, я бачу лише низку невдач",
+      "Я відчуваю, що зазнав повної поразки як особистість"
+  ]},
+  { id:4,  name:"Незадоволеність", opts:[
+      "Я отримую стільки ж задоволення від життя, як і раніше",
+      "Я не отримую стільки задоволення від життя, як раніше",
+      "Я більше не отримую справжнього задоволення ні від чого",
+      "Я цілком незадоволений усім і мені все набридло"
+  ]},
+  { id:5,  name:"Вина", opts:[
+      "Я не почуваюся винним",
+      "Досить часто я почуваюся винним",
+      "Більшу частину часу я почуваюся винним",
+      "Я постійно почуваюся винним"
+  ]},
+  { id:6,  name:"Відчуття покарання", opts:[
+      "Я не відчуваю, що мене карають",
+      "Я відчуваю, що можу бути покараний",
+      "Я очікую покарання",
+      "Я відчуваю, що мене карають"
+  ]},
+  { id:7,  name:"Неприйняття себе", opts:[
+      "Я задоволений собою",
+      "Я незадоволений собою",
+      "Я відчуваю огиду до себе",
+      "Я ненавиджу себе"
+  ]},
+  { id:8,  name:"Самозвинувачення", opts:[
+      "Я не почуваюся гіршим за інших",
+      "Я критичний до себе за слабкості та помилки",
+      "Я весь час звинувачую себе у своїх вчинках",
+      "Я звинувачую себе у всьому поганому, що трапляється"
+  ]},
+  { id:9,  name:"Суїцидальні думки", opts:[
+      "У мене немає думок про те, щоб завдати собі шкоди",
+      "У мене є думки про те, щоб завдати собі шкоди, але я не стану їх здійснювати",
+      "Я хотів би покінчити з собою",
+      "Я б покінчив з собою, якби трапилася можливість"
+  ]},
+  { id:10, name:"Плач", opts:[
+      "Я плачу не більше, ніж зазвичай",
+      "Тепер я плачу більше, ніж раніше",
+      "Тепер я весь час плачу",
+      "Раніше я міг плакати, але тепер не можу, навіть якщо хочу"
+  ]},
+  { id:11, name:"Дратівливість", opts:[
+      "Я не дратуюся більше, ніж зазвичай",
+      "Я дратуюся трохи більше, ніж зазвичай",
+      "Я дратуюся набагато більше, ніж зазвичай",
+      "Я постійно роздратований"
+  ]},
+  { id:12, name:"Соціальна відстороненість", opts:[
+      "Я не втратив інтересу до інших людей",
+      "Я менше цікавлюся іншими людьми, ніж раніше",
+      "Я майже втратив інтерес до інших людей",
+      "Я повністю втратив інтерес до інших людей"
+  ]},
+  { id:13, name:"Нерішучість", opts:[
+      "Я приймаю рішення так само добре, як і завжди",
+      "Я відкладаю прийняття рішень частіше, ніж зазвичай",
+      "Мені значно важче приймати рішення, ніж раніше",
+      "Я взагалі не можу приймати жодних рішень"
+  ]},
+  { id:14, name:"Зміни у зовнішності", opts:[
+      "Я не вважаю, що виглядаю гірше, ніж раніше",
+      "Мене турбує те, що я виглядаю непривабливо",
+      "Я відчуваю, що в моїй зовнішності відбулися постійні зміни, що роблять мене непривабливим",
+      "Я відчуваю, що виглядаю жахливо"
+  ]},
+  { id:15, name:"Працездатність", opts:[
+      "Я працюю так само добре, як і раніше",
+      "Мені потрібно докласти додаткових зусиль, щоб почати щось робити",
+      "Я насилу змушую себе щось робити",
+      "Я зовсім не можу працювати"
+  ]},
+  { id:16, name:"Порушення сну", opts:[
+      "Я сплю так само добре, як і зазвичай",
+      "Я сплю гірше, ніж зазвичай",
+      "Я прокидаюся на одну-дві години раніше і мені важко заснути знову",
+      "Я прокидаюся на кілька годин раніше звичайного і не можу заснути"
+  ]},
+  { id:17, name:"Втомлюваність", opts:[
+      "Я втомлююся не більше, ніж зазвичай",
+      "Тепер я втомлююся швидше, ніж раніше",
+      "Я втомлююся майже від усього",
+      "Я надто втомився, щоб щось робити"
+  ]},
+  { id:18, name:"Втрата апетиту", opts:[
+      "Мій апетит не гірший, ніж зазвичай",
+      "У мене апетит гірший, ніж раніше",
+      "Тепер у мене значно гірший апетит",
+      "У мене зовсім немає апетиту"
+  ]},
+  { id:19, name:"Втрата ваги", opts:[
+      "Останнім часом я не схуд",
+      "Я схуд більш ніж на 2,5 кг",
+      "Я схуд більш ніж на 5 кг",
+      "Я схуд більш ніж на 7,5 кг"
+  ]},
+  { id:20, name:"Соматичні скарги", opts:[
+      "Я не турбуюся про своє здоров'я більше, ніж зазвичай",
+      "Мене турбують болі та нездужання",
+      "Я дуже стурбований своїм фізичним станом і мені важко думати про щось інше",
+      "Я настільки поглинений думками про своє здоров'я, що ні про що інше думати не можу"
+  ]},
+  { id:21, name:"Зниження лібідо", opts:[
+      "Останнім часом мій інтерес до сексу не змінився",
+      "Я цікавлюся сексом менше, ніж раніше",
+      "Тепер я значно менше цікавлюся сексом",
+      "Я повністю втратив інтерес до сексу"
+  ]}
+];
+
+// ──────────────────────────────────────────────────────────────────
+// Стан сесії
+// ──────────────────────────────────────────────────────────────────
+// ── НАЛАШТУВАННЯ ──
+const ENDPOINT  = "https://script.google.com/macros/s/AKfycbwvMVuennwFhTdNgDeYCDW9b3Ogth6mVWz4_43SyXZAedxktpUjnFVtlyxLNF_gItmh/exec";
+const TEST_TYPE = "shuffle"; // цей файл — перемішаний порядок
+
+const params = new URLSearchParams(location.search);
+const P_GROUP = params.get('group') || '';
+const P_VISIT = params.get('visit') || '';
+const P_RID   = params.get('rid')   || '';
+
+let order   = [];   // перемішані індекси Q[]
+let answers = {};   // id → бал (0–3)
+let rid     = '';
+
+// ──────────────────────────────────────────────────────────────────
+// Допоміжні функції
+// ──────────────────────────────────────────────────────────────────
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function severity(score) {
+    if (score <= 9)  return { label: 'Мінімальна', cls: 'sev-0' };
+    if (score <= 18) return { label: 'Легка',      cls: 'sev-1' };
+    if (score <= 29) return { label: 'Помірна',    cls: 'sev-2' };
+    return                   { label: 'Тяжка',     cls: 'sev-3' };
+}
+
+function fmtDate(ts) {
+    return new Date(ts).toLocaleString('uk-UA');
+}
+
+function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Сховище (localStorage)
+// ──────────────────────────────────────────────────────────────────
+function getAll()  { return JSON.parse(localStorage.getItem('bdi_data') || '[]'); }
+function saveOne(e){ const a = getAll(); a.push(e); localStorage.setItem('bdi_data', JSON.stringify(a)); }
+
+// ──────────────────────────────────────────────────────────────────
+// Екрани
+// ──────────────────────────────────────────────────────────────────
+function goWelcome() {
+    document.getElementById('rid').value = '';
+    show('screen-welcome');
+}
+
+function startSurvey() {
+    const inp = document.getElementById('rid');
+    const val = inp.value.trim();
+    if (!val) { inp.classList.add('error'); inp.focus(); return; }
+    inp.classList.remove('error');
+
+    rid     = val;
+    order   = shuffle(Q.map((_, i) => i));
+    answers = {};
+
+    renderSurvey();
+    show('screen-survey');
+}
+
+function renderSurvey() {
+    document.getElementById('survey-heading').textContent = `Учасник: ${rid}`;
+    const box = document.getElementById('qcontainer');
+    box.innerHTML = '';
+
+    order.forEach((qi, pos) => {
+        const q = Q[qi];
+        const card = document.createElement('div');
+        card.className = 'q-card';
+        card.id = `card-${q.id}`;
+
+        card.innerHTML = `
+            <div class="q-num">Питання ${pos + 1} з ${Q.length}</div>
+            <div class="q-label">${q.name}</div>
+            <ul class="options">
+            ${q.opts.map((txt, sc) => `
+                <li class="opt">
+                    <input type="radio" name="q${q.id}" id="q${q.id}_${sc}" value="${sc}"
+                        onchange="pick(${q.id},${sc})">
+                    <label for="q${q.id}_${sc}">
+                        <span class="score-dot">${sc}</span>
+                        <span>${txt}</span>
+                    </label>
+                </li>`).join('')}
+            </ul>`;
+        box.appendChild(card);
+    });
+
+    updateProgress();
+}
+
+function pick(qid, sc) {
+    answers[qid] = sc;
+    document.getElementById(`card-${qid}`).classList.add('answered');
+    updateProgress();
+    document.getElementById('warn-msg').textContent = '';
+}
+
+function updateProgress() {
+    const pct = (Object.keys(answers).length / Q.length) * 100;
+    document.getElementById('prog').style.width = pct + '%';
+}
+
+function submitSurvey() {
+    const missing = order.map(i => Q[i].id).filter(id => answers[id] === undefined);
+    if (missing.length) {
+        document.getElementById('warn-msg').textContent =
+            `Не дано відповіді на ${missing.length} питань(я). Будь ласка, відповідайте на всі.`;
+        document.getElementById(`card-${missing[0]}`)
+            ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+
+    const total = Object.values(answers).reduce((s, v) => s + v, 0);
+
+    saveOne({
+        id:      rid,
+        ts:      Date.now(),
+        order:   [...order],
+        answers: { ...answers },
+        total
+    });
+
+    sendToSheet(total);
+    show('screen-done');
+}
+
+function sendToSheet(total) {
+    const payload = {
+        rid:       rid,
+        group:     P_GROUP,
+        test_type: TEST_TYPE,
+        visit:     P_VISIT,
+        order:     order.map(i => Q[i].id),  // порядок показу за номерами питань
+        total:     total,
+        answers:   { ...answers }            // {номер_питання: бал}
+    };
+    fetch(ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+    }).catch(function(){ /* fire-and-forget */ });
+}
+
+function goResults() {
+    renderResults();
+    show('screen-results');
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Панель дослідника
+// ──────────────────────────────────────────────────────────────────
+function renderResults() {
+    const all     = getAll();
+    const content = document.getElementById('res-content');
+
+    if (!all.length) {
+        content.innerHTML = `<div class="empty">
+            <p>📋</p>
+            <p>Даних поки немає. Проведіть тестування з учасниками.</p>
+        </div>`;
+        return;
+    }
+
+    content.innerHTML = all.map((e, idx) => {
+        const sev  = severity(e.total);
+        const rows = e.order.map((qi, pos) => {
+            const q  = Q[qi];
+            const sc = e.answers[q.id];
+            return `<tr>
+                <td>${pos + 1}</td>
+                <td>Q${q.id}</td>
+                <td>${q.name}</td>
+                <td style="font-weight:700">${sc}</td>
+                <td>${q.opts[sc]}</td>
+            </tr>`;
+        }).join('');
+
+        return `
+        <div class="resp-block">
+            <div class="resp-head" onclick="toggle(${idx})">
+                <div>
+                    <strong>${e.id}</strong>
+                    <span class="resp-meta">${fmtDate(e.ts)}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:14px">
+                    <span>Сума: <strong>${e.total}</strong> / 63</span>
+                    <span class="badge ${sev.cls}">${sev.label}</span>
+                    <span style="color:#bbb;font-size:18px">⌄</span>
+                </div>
+            </div>
+            <div class="resp-body" id="rb-${idx}">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>№ (порядок)</th>
+                            <th>Q (вихідний)</th>
+                            <th>Шкала</th>
+                            <th>Бал</th>
+                            <th>Відповідь учасника</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function toggle(idx) {
+    document.getElementById(`rb-${idx}`).classList.toggle('open');
+}
+
+function clearData() {
+    if (!confirm('Видалити всі дані? Дія незворотна.')) return;
+    localStorage.removeItem('bdi_data');
+    renderResults();
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Експорт CSV
+// Формат «довгий»: один рядок = одна відповідь учасника на одне питання
+// Порядок рядків = порядок пред'явлення питань учаснику
+// ──────────────────────────────────────────────────────────────────
+function exportCSV() {
+    const all = getAll();
+    if (!all.length) { alert('Немає даних для експорту.'); return; }
+
+    const rows = [
+        ['ID учасника', 'Дата і час', 'Підсумковий бал', 'Тяжкість',
+         '№ п/п (порядок)', 'Q вихідний', 'Шкала BDI', 'Бал', 'Відповідь учасника']
+    ];
+
+    all.forEach(e => {
+        const sev = severity(e.total).label;
+        e.order.forEach((qi, pos) => {
+            const q  = Q[qi];
+            const sc = e.answers[q.id];
+            rows.push([
+                e.id,
+                fmtDate(e.ts),
+                e.total,
+                sev,
+                pos + 1,
+                `Q${q.id}`,
+                q.name,
+                sc,
+                q.opts[sc]
+            ]);
+        });
+    });
+
+    const csv = rows.map(r =>
+        r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')
+    ).join('\r\n');
+
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `BDI_results_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Підставити ID з посилання (від бота), якщо є
+if (P_RID) { document.getElementById('rid').value = P_RID; }
+</script>
+</body>
+</html>
