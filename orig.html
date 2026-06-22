@@ -341,6 +341,7 @@ const P_RID   = params.get('rid')   || '';
 let order   = [];
 let answers = {};
 let rid     = '';
+let surveyStart = 0;   // прихований таймер: момент показу питань
 let lastEntry = null;
 
 function shuffle(arr) {
@@ -374,6 +375,7 @@ function startSurvey() {
     order = Q.map((_, i) => i);
     answers = {};
 
+    surveyStart = Date.now();   // старт прихованого таймера
     renderSurvey();
     show('screen-survey');
 }
@@ -445,6 +447,7 @@ function sendToSheet(total) {
         visit:     P_VISIT,
         order:     order.map(i => Q[i].id),  // порядок показу за номерами питань
         total:     total,
+        duration_sec: Math.max(0, Math.round((Date.now() - surveyStart) / 1000)),
         answers:   (function(){ var m={}; Object.keys(answers).forEach(function(qid){ var qq=Q.find(function(x){return x.id===Number(qid);}); m[qid]= qq ? qq.opts[answers[qid]].s : ''; }); return m; })()  // {номер_питання: бал}
     };
     fetch(ENDPOINT, {
